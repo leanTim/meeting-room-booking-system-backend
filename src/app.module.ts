@@ -8,24 +8,35 @@ import { Role } from './user/entities/role.entity';
 import { Permission } from './user/entities/permission.entity';
 import { RedisModule } from './redis/redis.module';
 import { EmailModule } from './email/email.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
 
 @Module({
   imports: [UserModule,
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: "localhost",
-      port: 3306,
-      username: "root",
-      password: "Noone",
-      database: "meeting_room_booking_system",
-      synchronize: true, // 同步建表
-      logging: true, // 打印生成的sql语句
-      entities: [User, Role, Permission],
-      poolSize: 10,
-      connectorPackage: 'mysql2',
-      extra: {
-          authPlugin: 'sha256_password',
-      }
+    ConfigModule.forRoot({ // 抽离redis/mysql/nodemailer等的配置
+      isGlobal: true,
+      envFilePath: 'src/.env'
+    }),
+    TypeOrmModule.forRootAsync({
+      useFactory(configService: ConfigService){
+        return {
+          type: 'mysql',
+          host: configService.get('mysql_server_host'),
+          port: configService.get('mysql_server_port'),
+          username: configService.get('mysql_server_username'),
+          password: configService.get('mysql_server_password'),
+          database: configService.get('mysql_server_database'),
+          synchronize: true, // 同步建表
+          logging: false, // 打印生成的sql语句
+          entities: [User, Role, Permission],
+          poolSize: 10,
+          connectorPackage: 'mysql2',
+          extra: {
+              authPlugin: 'sha256_password',
+          }
+        }
+      },
+      inject: [ConfigService]
     }),
     RedisModule,
     EmailModule

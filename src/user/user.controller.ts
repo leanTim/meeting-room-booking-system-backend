@@ -33,7 +33,6 @@ export class UserController {
 
   @Post('register')
   async register(@Body() registerUser: RegisterUserDto) {
-    console.log('RegisterUser :>> ', registerUser);
     return await this.userService.register(registerUser)
   }
 

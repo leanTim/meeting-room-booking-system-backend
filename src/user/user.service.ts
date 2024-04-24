@@ -17,17 +17,11 @@ export class UserService {
 
   private logger = new Logger()
 
-  // 注入user表 module里typeorm.forFeat引用这里才能注入
-  // @InjectRepository(User)
-  // // private userRepository = Repository<User>;
-  // private userRepository = Repository<User>
-
   // 注入redisservice 因为resdis.services是injectable的
   @Inject(RedisService)
   private redisService: RedisService
 
   findAll() {
-    // this.userRepo.
     return `This action returns all user`;
   }
 
