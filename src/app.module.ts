@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Role } from './user/entities/role.entity';
 import { Permission } from './user/entities/permission.entity';
 import { RedisModule } from './redis/redis.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [UserModule,
@@ -26,7 +27,8 @@ import { RedisModule } from './redis/redis.module';
           authPlugin: 'sha256_password',
       }
     }),
-    RedisModule
+    RedisModule,
+    EmailModule
   ],
   controllers: [AppController],
   providers: [AppService],

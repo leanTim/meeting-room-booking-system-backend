@@ -22,7 +22,6 @@ export class UserService {
   // // private userRepository = Repository<User>;
   // private userRepository = Repository<User>
 
-  // test = this.userRepository.
   // 注入redisservice 因为resdis.services是injectable的
   @Inject(RedisService)
   private redisService: RedisService
