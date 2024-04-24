@@ -9,7 +9,7 @@ export class Role {
     id: number
 
     @Column({
-        comment: '角色名',
+        comment: '管理员/普通用户',
         length: 20
     })
     name: string
@@ -18,5 +18,5 @@ export class Role {
     @JoinTable({
         name: 'role_permissions'
     })
-    Permissions: Permission[]
+    permissions: Permission[]
 }
