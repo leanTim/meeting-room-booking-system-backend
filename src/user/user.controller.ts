@@ -10,9 +10,9 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('register')
-  register(@Body() registerUser: RegisterUserDto) {
+  async register(@Body() registerUser: RegisterUserDto) {
     console.log('RegisterUser :>> ', registerUser);
-    return 'success'    
+    return await this.userService.register(registerUser)
   }
 
   @Get()

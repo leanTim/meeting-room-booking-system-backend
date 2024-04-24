@@ -6,7 +6,7 @@ import { User } from './user/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Role } from './user/entities/role.entity';
 import { Permission } from './user/entities/permission.entity';
-
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [UserModule,
@@ -17,15 +17,16 @@ import { Permission } from './user/entities/permission.entity';
       username: "root",
       password: "Noone",
       database: "meeting_room_booking_system",
-      synchronize: true,
-      logging: true,
+      synchronize: true, // 同步建表
+      logging: true, // 打印生成的sql语句
       entities: [User, Role, Permission],
       poolSize: 10,
       connectorPackage: 'mysql2',
       extra: {
           authPlugin: 'sha256_password',
       }
-    })
+    }),
+    RedisModule
   ],
   controllers: [AppController],
   providers: [AppService],
