@@ -9,7 +9,8 @@ import { Repository } from 'typeorm';
 import { md5 } from 'src/util';
 import { Role } from './entities/role.entity';
 import { Permission } from './entities/permission.entity';
-
+import { LoginUserDto } from './dto/login-user.dto';
+import { LoginUserVo } from './vo/login-user.vo';
 
 @Injectable()
 export class UserService {
@@ -29,6 +30,8 @@ export class UserService {
   @Inject(RedisService)
   private redisService: RedisService
 
+
+  // 数据初始化
   async initData () {
     const user1 = new User()
     user1.username = 'zhangsan'
@@ -44,11 +47,21 @@ export class UserService {
     user2.email = 'bbb@bb.com'
     user2.nickName = '李四'
 
+    const user3 = new User()
+    user3.username = 'wangwu'
+    user3.password = md5('333333')
+    user3.nickName = '王武'
+    user3.email = 'ccc@cc.com'
+    user3.isAdmin = true
+
     const role1 = new Role()
     role1.name = '管理员'
 
     const role2 = new Role()
     role2.name = '普通用户'
+
+    const role3 = new Role()
+    role3.name = '管理员'
 
     const permission1 = new Permission()
     permission1.code = 'ccc'
@@ -58,17 +71,24 @@ export class UserService {
     permission2.code = 'ddd'
     permission2.description = '访问 ddd 接口'
 
+    const permission3 = new Permission()
+    permission3.code = 'fff'
+    permission3.description = '访问fff接口'
+
     user1.roles = [role1]
     user2.roles = [role2]
+    user3.roles = [role3]
 
     role1.permissions = [permission1, permission2]
     role2.permissions = [permission1]
+    role3.permissions = [permission1, permission2, permission3]
 
-    await this.permissionRepository.save([permission1, permission2])
-    await this.roleRepository.save([role1, role2])
-    await this.userRepository.save([user1, user2])
+    await this.permissionRepository.save([permission1, permission2, permission3])
+    await this.roleRepository.save([role1, role2, role3])
+    await this.userRepository.save([user1, user2, user3])
   }
 
+  // 注册
   async register(user: RegisterUserDto) {
     const captcha = await this.redisService.get(`captcha_${user.email}`)
 
@@ -101,6 +121,78 @@ export class UserService {
       this.logger.error(e, UserService)
     }
   }
+
+  // 登录
+  async login(loginUserDto: LoginUserDto, isAdmin: boolean) {
+    const user = await this.userRepository.findOne({
+      where: {
+        username: loginUserDto.username,
+        isAdmin
+      },
+      relations: ['roles', 'roles.permissions']
+    })
+
+    if(!user) {
+      throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST)
+    }
+
+    if(user.password !== md5(loginUserDto.password)) {
+      throw new HttpException('密码错误', HttpStatus.BAD_REQUEST)
+    }
+
+    const vo = new LoginUserVo()
+    vo.userInfo = {
+      id: user.id,
+      username: user.username,
+      nickname: user.nickName,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      headPic: user.headPic,
+      createTime: user.createTime.getTime(),
+      isFrozen: user.isFrozen,
+      isAdmin: user.isAdmin,
+      roles: user.roles.map(item => item.name),
+      permissions: user.roles.reduce((arr, item) => {
+        item.permissions.forEach(permission => {
+            if(arr.indexOf(permission) === -1) {
+                arr.push(permission);
+            }
+        })
+          return arr;
+      }, [])
+    }
+
+    return vo
+  }
+
+  async findUserById(userId: number, isAdmin: boolean) {
+    console.log('1-----------1---------1-------')
+
+    const user = await this.userRepository.findOne({
+      where: {
+        id: userId,
+        isAdmin
+      },
+      relations: ['roles', 'roles.permissions']
+    })
+
+    console.log('1--------2--------2----------2')
+    return {
+      id: user.id,
+      username: user.username,
+      isAdmin: user.isAdmin,
+      roles: user.roles.map((item) => item.name),
+      // permissions: user.roles.reduce((arr, item) => {
+      //   item.permissions.forEach(permission => {
+      //       if(arr.indexOf(permission) === -1) {
+      //           arr.push(permission);
+      //       }
+      //   })
+      //   return arr;
+      // }, [])
+    }
+  }
+
   findAll() {
     return `This action returns all user`;
   }

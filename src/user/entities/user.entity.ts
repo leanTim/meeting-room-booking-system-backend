@@ -38,7 +38,7 @@ export class User {
         length: 100,
         nullable: true
     })
-    headpic: string
+    headPic: string
 
     @Column({
         comment: '手机号',
@@ -60,7 +60,7 @@ export class User {
     isAdmin: boolean
 
     @CreateDateColumn()
-    creatTime: Date
+    createTime: Date
 
     @UpdateDateColumn()
     updateTime: Date
