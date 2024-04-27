@@ -12,6 +12,13 @@ interface JwtUserData {
   permissions: Permission[]
 }
 
+// 给express 的Request对象扩展上user属性
+declare module 'express' {
+  interface Request {
+    user: JwtUserData
+  }
+}
+
 @Injectable()
 export class LoginGuard implements CanActivate {
   @Inject()
@@ -23,7 +30,7 @@ export class LoginGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const request = context.switchToHttp().getRequest()
+    const request: Request = context.switchToHttp().getRequest()
 
     const requireLogin = this.reflector.getAllAndOverride('require-login', [
       context.getClass(),
@@ -42,7 +49,6 @@ export class LoginGuard implements CanActivate {
     try {
       const token = authorization.split(' ')[1]
       const data = this.jwtService.verify<JwtUserData>(token)
-      console.log(data)
       request.user = {
         userId: data.userId,
         username: data.username,

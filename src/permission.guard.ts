@@ -10,8 +10,9 @@ export class PermissionGuard implements CanActivate {
   async canActivate(
     context: ExecutionContext,
   ): Promise<boolean> {
-    const request = context.switchToHttp().getRequest()
+    const request: Request = context.switchToHttp().getRequest()
 
+    // 如果request没有user属性，说明改接口不需要登录，自然也不需要鉴权
     if(!request.user) {
       return true
     }

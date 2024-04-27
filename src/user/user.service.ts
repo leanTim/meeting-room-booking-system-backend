@@ -166,7 +166,6 @@ export class UserService {
   }
 
   async findUserById(userId: number, isAdmin: boolean) {
-    console.log('1-----------1---------1-------')
 
     const user = await this.userRepository.findOne({
       where: {
@@ -176,20 +175,19 @@ export class UserService {
       relations: ['roles', 'roles.permissions']
     })
 
-    console.log('1--------2--------2----------2')
     return {
       id: user.id,
       username: user.username,
       isAdmin: user.isAdmin,
       roles: user.roles.map((item) => item.name),
-      // permissions: user.roles.reduce((arr, item) => {
-      //   item.permissions.forEach(permission => {
-      //       if(arr.indexOf(permission) === -1) {
-      //           arr.push(permission);
-      //       }
-      //   })
-      //   return arr;
-      // }, [])
+      permissions: user.roles.reduce((arr, item) => {
+        item.permissions.forEach(permission => {
+            if(arr.indexOf(permission) === -1) {
+                arr.push(permission);
+            }
+        })
+        return arr;
+      }, [])
     }
   }
 
