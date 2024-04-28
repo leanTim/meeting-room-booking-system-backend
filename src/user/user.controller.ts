@@ -144,6 +144,13 @@ export class UserController {
     }
   }
 
+  // 冻结用户
+  @Get('freeze')
+  async freeze(@Query('id') userId: number) {
+    await this.userService.freezeUserById(userId)
+    return 'success'
+  }
+
   // 普通用户登录
   @Post('login')
   async userLogin(@Body() loginUser: LoginUserDto) {

@@ -258,6 +258,16 @@ export class UserService {
     }
   }
 
+  async freezeUserById(id: number) {
+    const user = await this.userRepository.findOneBy({
+      id
+    })
+
+    user.isFrozen = true
+
+    await this.userRepository.save(user)
+  }
+
   findAll() {
     return `This action returns all user`;
   }
