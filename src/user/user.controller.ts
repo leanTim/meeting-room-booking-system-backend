@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, Query, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, Query, UnauthorizedException, ParseIntPipe, BadRequestException, DefaultValuePipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { RegisterUserDto } from './dto/register-user';
 import { EmailService } from 'src/email/email.service';
@@ -13,6 +13,7 @@ import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { GET } from 'superagent';
 import { number } from 'yargs';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { generateParseIntPipe } from 'src/util';
 
 
 @Controller('user')
@@ -144,11 +145,45 @@ export class UserController {
     }
   }
 
+  // 查询用户信息
+  @Get('info')
+  @RequireLogin()
+  async info(@UserInfo('userId') userId: number) {
+    const user =  await this.userService.findUserDetailById(userId)
+
+    const vo = new UserDetailVo()
+    vo.id = user.id
+    vo.username = user.username
+    vo.nickName = user.nickName
+    vo.headPic = user.headPic
+    vo.phonoNumber = user.phoneNumber
+    vo.email = user.email
+    vo.createTime = user.createTime,
+    vo.isFrozen = user.isFrozen
+
+    return vo
+  }
+
   // 冻结用户
   @Get('freeze')
   async freeze(@Query('id') userId: number) {
     await this.userService.freezeUserById(userId)
     return 'success'
+  }
+
+  // 获取用户列表
+  // 可以根据用户名或者邮箱和昵称等筛选
+  @Get('list')
+  async list(
+    @Query('pageNo', new DefaultValuePipe(1), generateParseIntPipe('pageNo')) pageNo: number, 
+    @Query('pageSize', new DefaultValuePipe(2),generateParseIntPipe('pageSize')) pageSize: number,
+    @Query('username') username: string,
+    @Query('nickName') nickName: string,
+    @Query('email') email: string
+  )
+  {
+    // return await this.userService.findUsersByPage(pageNo, pageSize)
+    return await this.userService.findUser(username, nickName, email, pageNo, pageSize)
   }
 
   // 普通用户登录
@@ -193,25 +228,6 @@ export class UserController {
     }, {
       expiresIn: this.configService.get('jwt_refresh_token_expires_time') || '7d'
     })
-
-    return vo
-  }
-
-  // 查询用户信息
-  @Get('info')
-  @RequireLogin()
-  async info(@UserInfo('userId') userId: number) {
-    const user =  await this.userService.findUserDetailById(userId)
-
-    const vo = new UserDetailVo()
-    vo.id = user.id
-    vo.username = user.username
-    vo.nickName = user.nickName
-    vo.headPic = user.headPic
-    vo.phonoNumber = user.phoneNumber
-    vo.email = user.email
-    vo.createTime = user.createTime,
-    vo.isFrozen = user.isFrozen
 
     return vo
   }

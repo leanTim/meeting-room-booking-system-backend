@@ -3,7 +3,7 @@ import { RegisterUserDto } from './dto/register-user';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { RedisService } from 'src/redis/redis.service';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { md5 } from 'src/util';
 import { Role } from './entities/role.entity';
 import { Permission } from './entities/permission.entity';
@@ -11,6 +11,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { LoginUserVo } from './vo/login-user.vo';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { conditionalExpression } from '@babel/types';
 
 @Injectable()
 export class UserService {
@@ -266,6 +267,51 @@ export class UserService {
     user.isFrozen = true
 
     await this.userRepository.save(user)
+  }
+
+  async findUsersByPage(pageNo: number, pageSize: number) {
+    const skipCount = (pageNo - 1) * pageSize
+
+    const [users, totalCount] = await this.userRepository.findAndCount({
+      select: ['id', 'username', 'nickName', 'phoneNumber', 'email', 'headPic', 'isFrozen', 'createTime'],
+      skip: skipCount,
+      take: pageSize
+    })
+
+    return {
+      users,
+      totalCount
+    }
+  }
+
+  async findUser(username: string, nickName: string, email: string, pageNo: number, pageSize: number) {
+    const skipCount = (pageNo - 1) * pageSize
+
+    const condition: Record<string, any> = {}
+
+    if(username) {
+      condition.username = Like(`%${username}%`)
+    }
+
+    if(nickName) {
+      condition.nickName = Like(`%${nickName}%`)
+    }
+
+    if(email) {
+      condition.email = Like(`%${email}%`)
+    }
+
+    const [users, totalCount] = await this.userRepository.findAndCount({
+      select: ['id', 'username', 'nickName', 'phoneNumber', 'email', 'headPic', 'isFrozen', 'createTime'],
+      skip: skipCount,
+      take: pageSize,
+      where: condition
+    })
+
+    return {
+      users,
+      totalCount
+    }
   }
 
   findAll() {
