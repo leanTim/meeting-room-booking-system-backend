@@ -15,7 +15,6 @@ export class AppController {
   // @SetMetadata('require-permission', ['ddd'])
   @RequireLogin()
   aaaa(@UserInfo() userInfo){
-    // console.log(userInfo)
     return 'aaaa'
   }
 
