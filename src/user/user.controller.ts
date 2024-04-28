@@ -1,7 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, Query, UnauthorizedException } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { RegisterUserDto } from './dto/register-user';
 import { EmailService } from 'src/email/email.service';
 import { RedisService } from 'src/redis/redis.service';
@@ -13,6 +11,8 @@ import { RequireLogin, UserInfo } from 'src/custom.decorator';
 import { UserDetailVo } from './vo/user-info.vo';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { GET } from 'superagent';
+import { number } from 'yargs';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 
 @Controller('user')
@@ -52,6 +52,21 @@ export class UserController {
       to: address,
       subject: '更改密码验证码',
       html: `<p>你的更改密码验证码是 ${code}</p>`
+    })
+
+    return '发送成功；'
+  }
+
+  @Get('update/captecha')
+  async updateCaptcha(@Query('address') address: string) {
+    const code = Math.random().toString().slice(2,8)
+
+    await this.redisService.set(`update_password_captcha_${address}`, code, 10 * 60)
+
+    await this.emailService.sendMail({
+      to: address,
+      subject: '更改用户信息验证码',
+      html: `<p>你的更改用户信息的验证码是 ${code}</p>`
     })
 
     return '发送成功；'
@@ -202,8 +217,8 @@ export class UserController {
 
   @Post(['update', 'admin/update'])
   @RequireLogin()
-  async update() {
-    
+  async update(@UserInfo('userId') userId: number, @Body() updateUserDto: UpdateUserDto) {
+    return await this.userService.updateUser(userId, updateUserDto)
   }
 
   @Get()
