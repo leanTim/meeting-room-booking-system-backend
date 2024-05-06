@@ -12,6 +12,7 @@ import { LoginUserVo } from './vo/login-user.vo';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { conditionalExpression } from '@babel/types';
+import { UserListVo } from './vo/user-list.vo';
 
 @Injectable()
 export class UserService {
@@ -120,6 +121,7 @@ export class UserService {
       return '注册成功'
     } catch(e) {
       this.logger.error(e, UserService)
+      return '注册失败'
     }
   }
 
@@ -308,10 +310,12 @@ export class UserService {
       where: condition
     })
 
-    return {
-      users,
-      totalCount
-    }
+    const vo = new UserListVo()
+
+    vo.totalCount = totalCount
+    vo.users = users
+
+    return vo
   }
 
   findAll() {

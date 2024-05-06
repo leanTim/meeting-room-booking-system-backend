@@ -1,6 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { RequireLogin, UserInfo } from './custom.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller()
 export class AppController {
@@ -10,16 +11,16 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
-  @Get('aaa')
+  // @Get('aaa')
   // @SetMetadata('require-login', true)
   // @SetMetadata('require-permission', ['ddd'])
-  @RequireLogin()
-  aaaa(@UserInfo() userInfo){
-    return 'aaaa'
-  }
+  // @RequireLogin()
+  // aaaa(@UserInfo() userInfo){
+  //   return 'aaaa'
+  // }
 
-  @Get('bbb')
-  bbb() {
-    return 'bbb'
-  }
+  // @Get('bbb')
+  // bbb() {
+  //   return 'bbb'
+  // }
 }
