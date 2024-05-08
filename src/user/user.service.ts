@@ -54,7 +54,7 @@ export class UserService {
     user3.password = md5('333333')
     user3.nickName = '王武'
     user3.email = 'ccc@cc.com'
-    user3.isAdmin = true
+    user3.isAdmin = false
 
     const role1 = new Role()
     role1.name = '管理员'

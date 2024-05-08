@@ -20,6 +20,7 @@ async function bootstrap() {
   app.useGlobalFilters(new UnloginFilter())
   app.useGlobalFilters(new CustomExceptionFilter())
 
+  app.enableCors() //开启跨域
   // 接口文档 http://localhost:3000/api-doc#/default
   const config = new DocumentBuilder()
     .setTitle('会议室预定系统')
