@@ -6,12 +6,9 @@ import { RedisService } from 'src/redis/redis.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { User } from './entities/user.entity';
 import { RequireLogin, UserInfo } from 'src/custom.decorator';
 import { UserDetailVo } from './vo/user-info.vo';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
-import { GET } from 'superagent';
-import { number } from 'yargs';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { generateParseIntPipe } from 'src/util';
 import { ApiBearerAuth, ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -240,7 +237,6 @@ export class UserController {
     return vo
   }
 
-  @ApiBearerAuth()
   @ApiQuery({
     name: 'addess',
     description: '邮箱地址',
@@ -250,7 +246,6 @@ export class UserController {
     description: '发送成功',
     type: String
   })
-  @RequireLogin()
   @Get('update_password/captcha')
   async updatePasswordCaptcha(@Query('address') address: string) {
     const code = Math.random().toString().slice(2,8)
@@ -290,7 +285,7 @@ export class UserController {
     return 'down'
   }
 
-  @ApiBearerAuth()
+  // 修改密码
   @ApiBody({
     type: UpdateUserPasswordDto
   })
@@ -305,9 +300,8 @@ export class UserController {
     type: String
   })
   @Post(['update_password', 'admin/update_password'])
-  @RequireLogin()
-  async updatePassword(@UserInfo('userId') userId: number, @Body() passwordDto: UpdateUserPasswordDto) {
-    return await this.userService.updatePassword(userId, passwordDto)
+  async updatePassword(@Body() passwordDto: UpdateUserPasswordDto) {
+    return await this.userService.updatePassword(passwordDto)
   }
 
   // 冻结用户

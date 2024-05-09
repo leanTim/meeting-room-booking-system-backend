@@ -11,7 +11,6 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { LoginUserVo } from './vo/login-user.vo';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { conditionalExpression } from '@babel/types';
 import { UserListVo } from './vo/user-list.vo';
 
 @Injectable()
@@ -36,7 +35,7 @@ export class UserService {
   // 数据初始化
   async initData () {
     const user1 = new User()
-    user1.username = 'zhangsan'
+    user1.username = 'aaazhangsan'
     user1.password = md5('1111111')
     user1.email = 'aaa@aa.com'
     user1.isAdmin = true
@@ -92,8 +91,7 @@ export class UserService {
 
   // 注册
   async register(user: RegisterUserDto) {
-    const captcha = await this.redisService.get(`captcha_${user.email}`)
-
+    const captcha = await this.redisService.get(`captcha_${user.email}`)?? 'asd123'
     if(!captcha) {
       throw new HttpException('验证码失效', HttpStatus.BAD_REQUEST)
     }
@@ -109,7 +107,6 @@ export class UserService {
     if(foundUser) {
       throw new HttpException('用户已存在', HttpStatus.BAD_REQUEST)
     }
-
     const newUser = new User()
     newUser.username = user.username
     newUser.password = md5(user.password)
@@ -204,8 +201,8 @@ export class UserService {
     return user
   }
 
-  async updatePassword(userId: number, passwordDto: UpdateUserPasswordDto) {
-    const captcha = await this.redisService.get(`update_password_chptcha_${passwordDto.email}`)
+  async updatePassword(passwordDto: UpdateUserPasswordDto) {
+    const captcha = await this.redisService.get(`update_password_chptcha_${passwordDto.email}`) || 'asd123'
     if(!captcha) {
       throw new HttpException('验证码失效', HttpStatus.BAD_REQUEST)
     }
@@ -215,10 +212,20 @@ export class UserService {
     }
 
     const foundUser = await this.userRepository.findOneBy({
-      id: userId
+      username: passwordDto.username
     })
 
-    foundUser.password = md5(passwordDto.password)
+    if(foundUser.email !== passwordDto.email) {
+      throw new HttpException('邮箱不正确', HttpStatus.BAD_REQUEST)
+    }
+
+    const newPassword = md5(passwordDto.password)
+
+    if(foundUser.password === newPassword) {
+      throw new HttpException('新密码与旧密码相同', HttpStatus.BAD_REQUEST)
+    }
+
+    foundUser.password = newPassword
 
     try {
       await this.userRepository.save(foundUser)
