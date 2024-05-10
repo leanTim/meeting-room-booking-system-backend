@@ -33,6 +33,8 @@ export class UserController {
   @Inject(ConfigService)
   private configService: ConfigService
 
+  constructor(private readonly userService: UserService) {}
+
   @ApiQuery({
     name: 'address',
     type: String,
@@ -58,6 +60,7 @@ export class UserController {
     return '发送成功；'
   }
 
+  // 注册
   @ApiBody({
     type: RegisterUserDto
   })
@@ -97,6 +100,7 @@ export class UserController {
      vo.accessToken = this.jwtService.sign({
        userId: vo.userInfo.id,
        username: vo.userInfo.username,
+       email: vo.userInfo.email,
        roles: vo.userInfo.roles,
        permissions: vo.userInfo.permissions
      },{
@@ -120,6 +124,7 @@ export class UserController {
     vo.accessToken = this.jwtService.sign({
       userId: vo.userInfo.id,
       username: vo.userInfo.username,
+      email: vo.userInfo.email,
       roles: vo.userInfo.roles,
       permissions: vo.userInfo.permissions
     }, {
@@ -160,6 +165,7 @@ export class UserController {
       const access_token = this.jwtService.sign({
         userId: user.id,
         username: user.username,
+        email: user.email,
         roles: user.roles,
         permissions: user.permissions
       }, {
@@ -191,6 +197,7 @@ export class UserController {
       const access_token = this.jwtService.sign({
         userId: user.id,
         username: user.username,
+        email: user.email,
         roles: user.roles,
         permissions: user.permissions
       }, {
@@ -261,7 +268,7 @@ export class UserController {
     return '发送成功；'
   }
 
-  @Get('update/captecha')
+  @Get('update/captcha')
   async updateCaptcha(@Query('address') address: string) {
     const code = Math.random().toString().slice(2,8)
 
@@ -275,8 +282,6 @@ export class UserController {
 
     return '发送成功；'
   }
-
-  constructor(private readonly userService: UserService) {}
 
 
   @Get('init-data')

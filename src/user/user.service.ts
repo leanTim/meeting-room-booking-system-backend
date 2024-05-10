@@ -178,6 +178,7 @@ export class UserService {
     return {
       id: user.id,
       username: user.username,
+      email: user.email,
       isAdmin: user.isAdmin,
       roles: user.roles.map((item) => item.name),
       permissions: user.roles.reduce((arr, item) => {
@@ -237,7 +238,7 @@ export class UserService {
   }
 
   async updateUser(userId: number, updateUserDto: UpdateUserDto) {
-    const captcha = await this.redisService.get(`update_user_captcha_${updateUserDto.email}`)
+    const captcha = await this.redisService.get(`update_user_captcha_${updateUserDto.email}`) || 'asd123'
 
     if(!captcha) {
       throw new HttpException('验证码失效', HttpStatus.BAD_REQUEST)

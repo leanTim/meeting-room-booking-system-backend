@@ -7,9 +7,10 @@ import { Request } from 'express'
 import { UnLoginException } from './unlogin.filter';
 
 interface JwtUserData {
-  userId: number,
-  username: string,
-  roles: string[],
+  userId: number
+  username: string
+  email: string
+  roles: string[]
   permissions: Permission[]
 }
 
@@ -45,8 +46,8 @@ export class LoginGuard implements CanActivate {
     const authorization = request.headers.authorization
     
     if(!authorization) {
-      // throw new UnauthorizedException('用户未登录111')
-      throw new UnLoginException()
+      throw new UnauthorizedException('用户未登录')
+      // throw new UnLoginException()
     }
     try {
       const token = authorization.split(' ')[1]
@@ -54,13 +55,14 @@ export class LoginGuard implements CanActivate {
       request.user = {
         userId: data.userId,
         username: data.username,
+        email: data.email,
         roles: data.roles,
         permissions: data.permissions
       }
       return true
     }catch(e) {
-      // throw new UnauthorizedException('token失效，请重新登录')
-      throw new UnLoginException()
+      throw new UnauthorizedException('token失效，请重新登录')
+      // throw new UnLoginException()
     }
   }
 }
