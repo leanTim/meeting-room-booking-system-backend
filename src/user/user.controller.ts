@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, Query, UnauthorizedException, ParseIntPipe, BadRequestException, DefaultValuePipe, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Inject, Query, UnauthorizedException, ParseIntPipe, BadRequestException, DefaultValuePipe, HttpStatus, HttpCode, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { RegisterUserDto } from './dto/register-user';
 import { EmailService } from 'src/email/email.service';
@@ -15,6 +15,10 @@ import { ApiBearerAuth, ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/
 import { LoginUserVo } from './vo/login-user.vo';
 import { RefreshTokenVo } from './vo/refresh-token.vo';
 import { UserListVo } from './vo/user-list.vo';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as path from 'path';
+import * as multer from "multer";
+import { storage } from 'src/my-file-storage';
 
 
 
@@ -391,6 +395,27 @@ export class UserController {
   @RequireLogin()
   async update(@UserInfo('userId') userId: number, @Body() updateUserDto: UpdateUserDto) {
     return await this.userService.updateUser(userId, updateUserDto)
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file', {
+    dest: 'uploads',
+    storage: storage,
+    limits: {
+      fileSize: 1024 * 1024 * 3
+    },
+    fileFilter(req, file, callback) {
+      // 获取图片后缀
+      const extname = path.extname(file.originalname)
+      if(['.png', '.gif', '.jpg'].includes(extname)) {
+        callback(null, true)
+      }else {
+        callback(new BadRequestException('只能传图片格式'), false)
+      }
+    }
+  }))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    return file.path
   }
 
   @Get()
