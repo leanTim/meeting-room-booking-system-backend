@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateMeetingRoomDto } from './dto/create-meeting-room.dto';
 import { UpdateMeetingRoomDto } from './dto/update-meeting-room.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -35,23 +35,59 @@ export class MeetingRoomService {
     this.repository.insert([room1, room2, room3])
   }
 
-  create(createMeetingRoomDto: CreateMeetingRoomDto) {
-    return 'This action adds a new meetingRoom';
+  async find(pageNo: number, pageSize: number) {
+    if(pageNo < 1) {
+        throw new BadRequestException('页码最小位1')
+    }
+    const skipCount = pageNo * pageSize
+
+    const [meetingRooms, totalCount] = await this.repository.findAndCount({
+        skip: skipCount,
+        take: pageSize
+    })
+    
+    return {
+        meetingRooms,
+        totalCount
+    }
   }
 
-  findAll() {
-    return `This action returns all meetingRoom`;
+  async create(meetingRoomDto: CreateMeetingRoomDto) {
+    const room = await this.repository.findOneBy({
+        name: meetingRoomDto.name
+    })
+
+    if(room) {
+        throw new BadRequestException('会议室名字已存在')
+    }
+    return await this.repository.save(meetingRoomDto)
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} meetingRoom`;
-  }
+  async update(meetingRoonDto: UpdateMeetingRoomDto) {
+    const meetingRoom = await this.repository.findOneBy({
+        id: meetingRoonDto.id
+    })
 
-  update(id: number, updateMeetingRoomDto: UpdateMeetingRoomDto) {
-    return `This action updates a #${id} meetingRoom`;
-  }
+    if(!meetingRoom) {
+        throw new BadRequestException('会议室不存在')
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} meetingRoom`;
+    meetingRoom.capacity = meetingRoonDto.capacity
+    meetingRoom.location = meetingRoonDto.location
+    meetingRoom.name = meetingRoonDto.name
+
+    if(meetingRoonDto.description) {
+        meetingRoom.description = meetingRoonDto.description
+    }
+
+    if(meetingRoonDto.equipment) {
+        meetingRoom.equipment = meetingRoonDto.equipment
+    }
+
+    await this.repository.update({
+        id: meetingRoom.id
+    }, meetingRoom)
+    return 'success'
   }
 }
+
