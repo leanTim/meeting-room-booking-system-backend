@@ -300,6 +300,7 @@ export class UserService {
     const condition: Record<string, any> = {}
 
     if(username) {
+      // 模糊查询
       condition.username = Like(`%${username}%`)
     }
 

@@ -13,6 +13,7 @@ import { JwtModule } from '@nestjs/jwt'
 import { APP_GUARD } from '@nestjs/core';
 import { LoginGuard } from './login.guard';
 import { PermissionGuard } from './permission.guard';
+import { MeetingRoomModule } from './meeting-room/meeting-room.module';
 
 @Module({
   imports: [UserModule,
@@ -54,7 +55,8 @@ import { PermissionGuard } from './permission.guard';
       inject: [ConfigService]
     }),
     RedisModule,
-    EmailModule
+    EmailModule,
+    MeetingRoomModule
   ],
   controllers: [AppController],
   providers: [
