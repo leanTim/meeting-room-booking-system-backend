@@ -35,11 +35,11 @@ export class MeetingRoomService {
     this.repository.insert([room1, room2, room3])
   }
 
-  async find(pageNo: number, pageSize: number, name: string, capacity: string, equipment: string) {
+  async find(name: string, capacity: number, equipment: string, pageNo: number, pageSize: number) {
     if(pageNo < 1) {
         throw new BadRequestException('页码最小位1')
     }
-    const skipCount = pageNo * pageSize
+    const skipCount = (pageNo - 1) * pageSize
 
     const condition: Record<string, any> = {}
 
@@ -50,7 +50,6 @@ export class MeetingRoomService {
     if(equipment) {
         condition.equipment = Like(`%${equipment}%`)
     }
-
     if(capacity) {
         condition.capacity = capacity
     }
