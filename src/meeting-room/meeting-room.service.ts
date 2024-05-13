@@ -3,7 +3,7 @@ import { CreateMeetingRoomDto } from './dto/create-meeting-room.dto';
 import { UpdateMeetingRoomDto } from './dto/update-meeting-room.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MeetingRoom } from './entities/meeting-room.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 
 @Injectable()
 export class MeetingRoomService {
@@ -35,15 +35,30 @@ export class MeetingRoomService {
     this.repository.insert([room1, room2, room3])
   }
 
-  async find(pageNo: number, pageSize: number) {
+  async find(pageNo: number, pageSize: number, name: string, capacity: string, equipment: string) {
     if(pageNo < 1) {
         throw new BadRequestException('页码最小位1')
     }
     const skipCount = pageNo * pageSize
 
+    const condition: Record<string, any> = {}
+
+    if(name) {
+        condition.name = Like(`%${name}%`)
+    }
+
+    if(equipment) {
+        condition.equipment = Like(`%${equipment}%`)
+    }
+
+    if(capacity) {
+        condition.capacity = capacity
+    }
+
     const [meetingRooms, totalCount] = await this.repository.findAndCount({
         skip: skipCount,
-        take: pageSize
+        take: pageSize,
+        where: condition
     })
     
     return {
@@ -87,6 +102,19 @@ export class MeetingRoomService {
     await this.repository.update({
         id: meetingRoom.id
     }, meetingRoom)
+    return 'success'
+  }
+
+  async findById(id: number) {
+    return await this.repository.findOneBy({
+        id
+    })
+  }
+  
+  async delete(id: number) {
+    await this.repository.delete({
+        id
+    })
     return 'success'
   }
 }

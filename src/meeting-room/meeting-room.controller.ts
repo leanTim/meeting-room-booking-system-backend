@@ -11,9 +11,12 @@ export class MeetingRoomController {
   @Get('list')
   async list(
     @Query('pageNo', new DefaultValuePipe(1), generateParseIntPipe('pageNo'))pageNo: number,
-    @Query('pageSize', new DefaultValuePipe(2),generateParseIntPipe('pageSize'))pageSize: number
+    @Query('pageSize', new DefaultValuePipe(2),generateParseIntPipe('pageSize'))pageSize: number,
+    @Query('name')catacity: string,
+    @Query('capacity')name: string,
+    @Query('equipment')equipment: string
   ) {
-    return await this.meetingRoomService.find(pageNo, pageSize)
+    return await this.meetingRoomService.find(pageNo, pageSize, catacity, name, equipment)
   }
 
   @Post('create')
@@ -30,6 +33,18 @@ export class MeetingRoomController {
     return await this.meetingRoomService.update(meetingRoomDto)
   }
 
+  @Get(':id')
+  async find(
+    @Param('id')id: number
+  ) {
+    return await this.meetingRoomService.findById(id)
+  }
 
+  @Delete(':id')
+  async delete(
+    @Param('id')id: number
+  ) {
+    return await this.meetingRoomService.delete(id)
+  }
 
 }
